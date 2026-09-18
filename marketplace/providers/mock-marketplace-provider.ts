@@ -1,0 +1,3 @@
+import { normalizeCompetitorProducts } from "../normalize";
+import type { MarketplaceProvider } from "../types";
+export const mockMarketplaceProvider: MarketplaceProvider = { name:"mock-marketplace", async search({query,marketplace="amazon",limit=10}) { const fetchedAt=new Date().toISOString(); const rows=Array.from({length:Math.min(limit,5)},(_,i)=>({asin:`MOCK-${i+1}`,title:`${query} 竞品 ${i+1}`,brand:`Brand ${i+1}`,price:20+i*3,currency:"USD",rating:4.1+i*.1,reviewCount:100+i*50,features:["快速过滤","易于使用"],availability:"in_stock",productUrl:`https://example.com/p/${i+1}` })); return {products:normalizeCompetitorProducts(rows,marketplace,fetchedAt),marketplace,query,fetchedAt}; } };
