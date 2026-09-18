@@ -72,6 +72,12 @@ model ResearchResult {
   coverage        String
   priceRange      String
   opportunities   Json
+  coreSellingPoints Json
+  userPainPoints Json
+  targetUsers Json
+  competitorDifferentiators Json
+  recommendedKeywords Json
+  risks Json
   source          String   @default("mock")
   createdAt       DateTime @default(now())
   product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -129,3 +135,9 @@ model SeoAudit {
 
   @@index([productId, createdAt])
 }
+
+
+
+
+
+

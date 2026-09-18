@@ -1,0 +1,5 @@
+import { listingGenerationSchema } from "@/ai/schemas";
+import { getAiProvider } from "@/ai/provider";
+import type { AiProvider } from "@/ai/types";
+import type { ListingAdapter } from "@/adapters/types";
+export function createListingAiAdapter(provider: AiProvider = getAiProvider()): ListingAdapter { return { async generateListing(input) { let last = "AI_RESPONSE_INVALID"; for (let attempt=0; attempt<2; attempt++) { try { const raw = await provider.completeJson({ system:"输出 Listing JSON", user:input.productName, responseSchemaName:"listing-generation" }); const parsed = listingGenerationSchema.safeParse(raw); if (parsed.success) return { state:"succeeded", source:provider.name === "mock" ? "mock" : "external", data:parsed.data }; } catch (error) { last = error instanceof Error ? error.message : "AI_PROVIDER_ERROR"; } } return { state:"failed", source:provider.name === "mock" ? "mock" : "external", error:{ code:last === "AI_RESPONSE_INVALID" ? last : "AI_PROVIDER_ERROR", message:last } }; } }; }

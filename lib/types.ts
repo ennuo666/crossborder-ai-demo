@@ -57,6 +57,7 @@ export type ListingRecord = {
   updatedAt: string;
 };
 
-export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; source: string; createdAt: string };
+export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; coreSellingPoints: string[]; userPainPoints: string[]; targetUsers: string[]; competitorDifferentiators: string[]; recommendedKeywords: string[]; risks: string[]; source: string; createdAt: string };
 export type AssetRecord = { id: string; productId: string; taskId: string | null; kind: string; name: string; url: string | null; metadata: Record<string, unknown>; status: string; createdAt: string };
 export type SeoAuditRecord = { id: string; productId: string; taskId: string | null; score: number; issueCount: number; details: Record<string, unknown>; status: string; createdAt: string };
+
