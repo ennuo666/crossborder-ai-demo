@@ -1,6 +1,6 @@
 # 跨境 AI 工作台 MVP
 
-阶段 1 已将原有纯 HTML/CSS/JavaScript Demo 重构为 Next.js + TypeScript 应用。当前使用 Tailwind CSS、shadcn/ui 风格基础组件和本地 mock 数据，不包含真实数据库、模型调用或第三方发布接口。
+阶段 2 已在 Next.js + TypeScript 应用上增加 Prisma/PostgreSQL 数据层、Product/Task 等 MVP 模型和 Route Handlers。当前使用 Tailwind CSS、shadcn/ui 风格基础组件；未配置 `DATABASE_URL` 时，服务层使用同一接口的 in-memory adapter，外部 AI 和平台能力仍由 mock adapter 执行。
 
 ## 本地运行
 
@@ -8,6 +8,7 @@
 
 ```powershell
 npm install
+npm run prisma:generate
 npm run dev
 ```
 
@@ -40,3 +41,22 @@ npm run typecheck
 npm run build
 npm test
 ```
+
+## 数据库
+
+复制 `.env.example` 为 `.env`，填入 PostgreSQL 连接字符串：
+
+```powershell
+Copy-Item .env.example .env
+npm run prisma:generate
+npx prisma migrate dev --name init
+```
+
+`prisma/schema.prisma` 包含 Product、Task、ResearchResult、Listing、Asset 和 SeoAudit。未设置 `DATABASE_URL` 时，API 会使用内存 adapter 让本地 UI 继续可运行；设置后会自动切换到 Prisma adapter。
+
+阶段 2 的 API 边界：
+
+- `GET/POST /api/products`
+- `GET /api/products/:id`
+- `GET/POST /api/products/:id/listing`
+- `GET/POST /api/products/:id/tasks`

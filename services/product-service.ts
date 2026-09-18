@@ -1,7 +1,11 @@
-import { products } from "@/lib/mock-data";
-import type { Product } from "@/lib/types";
+import { getRepositories } from "@/repositories";
+import type { RepositoryBundle, ProductCreateInput } from "@/repositories/types";
+import { createTask } from "./task-service";
 
-export function listProducts(): Product[] { return products; }
-export function createMockProduct(name: string, market = "美国", channel = "Amazon US"): Product {
-  return { id: `mock-${Date.now()}`, name, subtitle: "New product workspace", market, channel, status: "待研究", progress: 0, updatedAt: "刚刚" };
+export async function listProducts(repositories: RepositoryBundle = getRepositories()) { return repositories.products.list(); }
+export async function getProduct(id: string, repositories: RepositoryBundle = getRepositories()) { return repositories.products.findById(id); }
+export async function createProduct(input: ProductCreateInput, repositories: RepositoryBundle = getRepositories()) {
+  const product = await repositories.products.create({ ...input, name: input.name.trim() || "新商品项目" });
+  const task = await createTask(product.id, "RESEARCH", { productName: product.name }, repositories);
+  return { product, task };
 }

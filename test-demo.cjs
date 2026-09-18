@@ -18,6 +18,8 @@ for (const file of [
   "components/ui/button.tsx", "components/ui/dialog.tsx",
   "lib/mock-data.ts", "services/product-service.ts", "services/task-service.ts",
   "adapters/types.ts", "adapters/mock/index.ts",
+  "prisma/schema.prisma", "repositories/types.ts", "repositories/in-memory-repository.ts", "repositories/prisma-repository.ts",
+  "app/api/products/route.ts", "app/api/products/[id]/route.ts", "app/api/products/[id]/listing/route.ts", "app/api/products/[id]/tasks/route.ts",
 ]) {
   assert.ok(fs.existsSync(file), `Missing migrated file: ${file}`);
 }
@@ -35,5 +37,12 @@ assert.match(app, /createProduct/);
 assert.match(app, /sendMessage/);
 assert.match(views, /生成新版本/);
 assert.match(views, /运行审计/);
+assert.match(read("prisma/schema.prisma"), /model Product/);
+assert.match(read("prisma/schema.prisma"), /model Task/);
+assert.match(read("prisma/schema.prisma"), /model ResearchResult/);
+assert.match(read("prisma/schema.prisma"), /model Listing/);
+assert.match(read("prisma/schema.prisma"), /model Asset/);
+assert.match(read("prisma/schema.prisma"), /model SeoAudit/);
+assert.doesNotMatch(app, /@\/lib\/mock-data/);
 
 console.log("Next.js migration smoke test passed");

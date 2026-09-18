@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskType {
+  RESEARCH
+  LISTING_GENERATION
+  ASSET_GENERATION
+  SEO_AUDIT
+}
+
+enum TaskStatus {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+model Product {
+  id              String           @id @default(cuid())
+  name            String
+  subtitle        String?
+  market          String
+  channel         String
+  status          String           @default("待研究")
+  progress        Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  tasks           Task[]
+  researchResults ResearchResult[]
+  listings        Listing[]
+  assets          Asset[]
+  seoAudits       SeoAudit[]
+
+  @@index([updatedAt])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  productId   String
+  type        TaskType
+  status      TaskStatus @default(queued)
+  progress    Int        @default(0)
+  input       Json?
+  output      Json?
+  errorCode   String?
+  errorMessage String?
+  retryCount  Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  researchResult ResearchResult?
+  listing      Listing?
+  asset        Asset?
+  seoAudit     SeoAudit?
+
+  @@index([productId, createdAt])
+  @@index([status])
+}
+
+model ResearchResult {
+  id              String   @id @default(cuid())
+  productId       String
+  taskId          String?  @unique
+  competitorCount Int
+  coverage        String
+  priceRange      String
+  opportunities   Json
+  source          String   @default("mock")
+  createdAt       DateTime @default(now())
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  task            Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt])
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  productId   String
+  taskId      String?  @unique
+  version     Int
+  title       String
+  bullets     Json
+  description String?
+  keywords    Json
+  status      String   @default("draft")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, version])
+  @@index([productId, updatedAt])
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  productId String
+  taskId    String?  @unique
+  kind      String
+  name      String
+  url       String?
+  metadata  Json
+  status    String   @default("ready")
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt])
+}
+
+model SeoAudit {
+  id         String   @id @default(cuid())
+  productId  String
+  taskId     String?  @unique
+  score      Int
+  issueCount Int
+  details    Json
+  status     String   @default("completed")
+  createdAt  DateTime @default(now())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  task       Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt])
+}
