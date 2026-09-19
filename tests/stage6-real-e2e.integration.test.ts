@@ -1,0 +1,6 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createInMemoryRepositories } from "@/repositories/in-memory-repository";
+import { startResearch } from "@/services/research-service";
+import { startListingGeneration } from "@/services/listing-service";
+test("real Amazon plus AI end-to-end chain",{skip:!(process.env.RUN_REAL_E2E === "1"&&process.env.SERPAPI_API_KEY&&process.env.AI_API_KEY)},async()=>{const repos=createInMemoryRepositories(); const product=await repos.products.create({name:process.env.SERPAPI_TEST_QUERY||"wireless charger",market:"US",channel:"Amazon"}); const started=Date.now(); const researchTask=await startResearch(product.id,undefined,repos); assert.equal(researchTask.status,"succeeded"); const listingTask=await startListingGeneration(product.id,repos); assert.equal(listingTask.status,"succeeded"); const research=await repos.research.latestByProduct(product.id); const listing=await repos.listings.latestByProduct(product.id); assert.ok(research?.competitorCount); assert.ok(listing?.title); console.log(JSON.stringify({competitorCount:research?.competitorCount,priceRange:research?.priceRange,researchLatencyMs:researchTask.updatedAt,researchUsage:research?.aiUsage,listingTitle:listing?.title,totalTaskElapsedMs:Date.now()-started}));});

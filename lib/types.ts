@@ -43,6 +43,7 @@ export type TaskRecord = {
   updatedAt: string;
 };
 
+export type AiUsageRecord = { provider:string; model?:string; latencyMs:number; inputTokens?:number; outputTokens?:number; totalTokens?:number };
 export type ListingRecord = {
   id: string;
   productId: string;
@@ -55,9 +56,10 @@ export type ListingRecord = {
   status: string;
   createdAt: string;
   updatedAt: string;
+  aiUsage?: AiUsageRecord | null;
 };
 
-export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; coreSellingPoints: string[]; userPainPoints: string[]; targetUsers: string[]; competitorDifferentiators: string[]; recommendedKeywords: string[]; risks: string[]; source: string; marketplace: string; query: string; competitorIds: string[]; fetchedAt: string; stats: Record<string, unknown>; createdAt: string };
+export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; coreSellingPoints: string[]; userPainPoints: string[]; targetUsers: string[]; competitorDifferentiators: string[]; recommendedKeywords: string[]; risks: string[]; source: string; marketplace: string; query: string; competitorIds: string[]; fetchedAt: string; stats: Record<string, unknown>; aiUsage?: AiUsageRecord | null; createdAt: string };
 export type AssetRecord = { id: string; productId: string; taskId: string | null; kind: string; name: string; url: string | null; metadata: Record<string, unknown>; status: string; createdAt: string };
 export type SeoAuditRecord = { id: string; productId: string; taskId: string | null; score: number; issueCount: number; details: Record<string, unknown>; status: string; createdAt: string };
 

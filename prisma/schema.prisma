@@ -84,6 +84,7 @@ model ResearchResult {
   competitorIds   Json
   fetchedAt       DateTime
   stats           Json
+  aiUsage         Json?
   createdAt       DateTime @default(now())
   product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   task            Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
@@ -100,6 +101,7 @@ model Listing {
   bullets     Json
   description String?
   keywords    Json
+  aiUsage     Json?
   status      String   @default("draft")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

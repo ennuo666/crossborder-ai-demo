@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ListingRecord, ProductRecord, TaskRecord, TaskType, ViewKey } from "@/lib/types";
+import type { ListingRecord, ProductRecord, ResearchResultRecord, TaskRecord, TaskType, ViewKey } from "@/lib/types";
 import { navigationGroups, viewNames } from "@/lib/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export function WorkspaceApp() {
   const [taskRows, setTaskRows] = useState<TaskRecord[]>([]);
   const [activeProduct, setActiveProduct] = useState<ProductRecord | null>(null);
   const [listing, setListing] = useState<ListingRecord | null>(null);
+  const [research, setResearch] = useState<ResearchResultRecord | null>(null);
 
   function toast(message: string) { setToastMessage(message); window.setTimeout(() => setToastMessage(""), 2600); }
   function navigate(view: ViewKey) { setCurrentView(view); window.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -31,13 +32,14 @@ export function WorkspaceApp() {
     const data = await response.json() as { products: ProductRecord[] };
     setProductRows(data.products ?? []);
     const product = data.products?.[0];
-    if (!product) { setActiveProduct(null); setTaskRows([]); setListing(null); return; }
+    if (!product) { setActiveProduct(null); setTaskRows([]); setListing(null); setResearch(null); return; }
     setActiveProduct(product);
     const detailResponse = await fetch(`/api/products/${product.id}`, { cache: "no-store" });
     if (!detailResponse.ok) return;
-    const detail = await detailResponse.json() as { tasks?: TaskRecord[]; listing?: ListingRecord | null };
+    const detail = await detailResponse.json() as { tasks?: TaskRecord[]; listing?: ListingRecord | null; research?: ResearchResultRecord | null };
     setTaskRows(detail.tasks ?? []);
     setListing(detail.listing ?? null);
+    setResearch(detail.research ?? null);
   }
 
   useEffect(() => { void loadWorkspace(); }, []);
@@ -57,19 +59,20 @@ export function WorkspaceApp() {
   async function selectProduct(id: string) {
     const response = await fetch(`/api/products/${id}`, { cache: "no-store" });
     if (!response.ok) return;
-    const detail = await response.json() as { product: ProductRecord; tasks?: TaskRecord[]; listing?: ListingRecord | null };
+    const detail = await response.json() as { product: ProductRecord; tasks?: TaskRecord[]; listing?: ListingRecord | null; research?: ResearchResultRecord | null };
     setActiveProduct(detail.product);
     setTaskRows(detail.tasks ?? []);
     setListing(detail.listing ?? null);
+    setResearch(detail.research ?? null);
   }
 
   async function runTask(type: TaskType) {
     if (!activeProduct?.id || activeProduct.id === "fallback") { toast("请先创建一个可持久化的商品项目"); return; }
     const response = await fetch(`/api/products/${activeProduct.id}/tasks`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type }) });
-    if (response.ok) { toast(`${type} 任务已完成并保存`); await loadWorkspace(); } else toast("任务执行失败，请稍后重试");
+    if (response.ok) { const data = await response.json() as { task?: TaskRecord }; toast(data.task?.status === "failed" ? "任务失败，错误已记录" : `${type} 任务已完成并保存`); await loadWorkspace(); } else toast("任务执行失败，请稍后重试");
   }
 
-  const sharedProps = { navigate, toast, selectProduct, product: activeProduct, products: productRows, tasks: taskRows, listing, productId: activeProduct?.id, runTask, refresh: loadWorkspace };
+  const sharedProps = { navigate, toast, selectProduct, product: activeProduct, products: productRows, tasks: taskRows, listing, research, productId: activeProduct?.id, runTask, refresh: loadWorkspace };
   const view = { overview: <OverviewView {...sharedProps} />, products: <ProductsView {...sharedProps} />, research: <ResearchView {...sharedProps} />, listing: <ListingView {...sharedProps} />, assets: <AssetsView {...sharedProps} />, store: <StoreView {...sharedProps} />, seo: <SeoView {...sharedProps} />, tasks: <TasksView {...sharedProps} />, settings: <SettingsView {...sharedProps} /> }[currentView];
 
   return <div className="app-shell">
