@@ -12,6 +12,7 @@ export async function executeTask<T>(taskId: string, handler: () => Promise<T>, 
     return repositories.tasks.update(taskId, { status: "succeeded", progress: 100, output });
   } catch (error) {
     const message = error instanceof Error ? error.message : "任务执行失败";
-    return repositories.tasks.update(taskId, { status: "failed", progress: 100, errorCode: "TASK_FAILED", errorMessage: message });
+    const errorCode = /^[A-Z][A-Z0-9_]+$/.test(message) ? message : "TASK_FAILED";
+    return repositories.tasks.update(taskId, { status: "failed", progress: 100, errorCode, errorMessage: message });
   }
 }

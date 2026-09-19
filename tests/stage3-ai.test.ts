@@ -20,5 +20,6 @@ test("research adapter retries malformed provider output", async () => {
 test("listing adapter returns a bounded failure for invalid output", async () => {
   const provider: AiProvider = { name:"fake", async completeJson() { return { title:"bad" }; } };
   const result = await createListingAiAdapter(provider).generateListing({productName:"Filter"});
-  assert.equal(result.state, "failed"); assert.equal(result.error?.code, "AI_RESPONSE_INVALID");
+  assert.equal(result.state, "failed"); assert.equal(result.error?.code, "AI_RESPONSE_SCHEMA_INVALID");
 });
+
