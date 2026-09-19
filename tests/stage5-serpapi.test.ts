@@ -1,0 +1,9 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { SerpApiAmazonProvider, SerpApiProviderError } from "@/marketplace/providers/serpapi-amazon-provider";
+const fixture=(name:string)=>JSON.parse(fs.readFileSync(`tests/fixtures/serpapi/${name}`,"utf8"));
+const response=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json"}});
+test("SerpApi maps organic, sponsored and enriches top result",async()=>{let calls:string[]=[]; const provider=new SerpApiAmazonProvider("secret",{fetcher:async(input)=>{const url=new URL(input.toString()); calls.push(url.searchParams.get("engine")!); return response(url.searchParams.get("engine")==="amazon"?fixture("amazon-search-success.json"):fixture("amazon-product-success.json"));},enrichmentLimit:1}); const result=await provider.search({query:"wireless charger",limit:2}); assert.equal(result.products.length,2); assert.equal(result.products[0].externalId,"B001"); assert.equal(result.products[0].manufacturer,"ChargeCo Inc"); assert.equal(result.products[1].sponsored,true); assert.deepEqual(calls,["amazon","amazon_product"]);});
+test("SerpApi classifies missing key and empty result",async()=>{await assert.rejects(()=>new SerpApiAmazonProvider("").search({query:"x"}),(e)=>e instanceof SerpApiProviderError&&e.code==="INVALID_CONFIGURATION"); const p=new SerpApiAmazonProvider("secret",{fetcher:async()=>response(fixture("empty-result.json"))}); await assert.rejects(()=>p.search({query:"x"}),(e)=>e instanceof SerpApiProviderError&&e.code==="EMPTY_SEARCH_RESULT");});
+test("SerpApi does not expose key in errors",async()=>{const p=new SerpApiAmazonProvider("TOP_SECRET",{fetcher:async()=>response({},401)}); await assert.rejects(()=>p.search({query:"x"}),(e)=>!String(e).includes("TOP_SECRET"));});
