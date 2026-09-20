@@ -22,7 +22,19 @@ test("production auth, IDOR and multi-user background persistence", {
   }
   const a = browser(), b = browser(), guest = browser();
   try {
-    assert.equal((await guest("/login")).status, 200);
+    const login = await guest("/login");
+    assert.equal(login.status, 200);
+    const html = await login.text();
+    assert.match(html, /method="post"/);
+    assert.match(html, /<fieldset disabled=""/);
+    const assets = [...new Set([...html.matchAll(/(?:src|href)="([^" ]*\/_next\/static\/[^" ]*)"/g)].map(match => match[1]))];
+    assert.ok(assets.some(asset => asset.endsWith(".css")));
+    assert.ok(assets.some(asset => asset.endsWith(".js")));
+    for (const asset of assets) {
+      const response = await fetch(new URL(asset, base));
+      assert.equal(response.status, 200, `Login asset unavailable: ${asset}`);
+      assert.match(response.headers.get("content-type") ?? "", asset.endsWith(".css") ? /text\/css/ : /javascript/);
+    }
     assert.equal((await guest("/api/health")).status, 200);
     assert.equal((await guest("/")).status, 307);
     assert.equal((await guest("/api/products")).status, 401);
