@@ -1,6 +1,10 @@
 import { z } from "zod";
+import { LISTING_CONSTRAINTS } from "./listing-config";
 const strings = z.array(z.string().min(1)).min(1);
 export const researchAnalysisSchema = z.object({ coreSellingPoints: strings, userPainPoints: strings, targetUsers: strings, competitorDifferentiators: strings, recommendedKeywords: strings, risks: z.array(z.string().min(1)), competitorCount: z.number().int().nonnegative().default(0), coverage: z.string().default(""), priceRange: z.string().default(""), opportunities: z.array(z.string()).default([]) });
-export const listingGenerationSchema = z.object({ title: z.string().min(1).max(200), bulletPoints: z.array(z.string().min(1)).min(1).max(7), description: z.string().min(1), keywords: strings });
+const englishText = z.string().trim().min(1).regex(/[A-Za-z]/).refine(value => !/[\u3400-\u9fff]/.test(value), "Expected English text");
+const chineseText = z.string().trim().min(1).regex(/[\u3400-\u9fff]/, "Expected Chinese text");
+export const listingGenerationSchema = z.object({ title: englishText.max(LISTING_CONSTRAINTS.titleMaxLength), titleZh: chineseText.max(LISTING_CONSTRAINTS.titleMaxLength), bulletPoints: z.array(englishText).length(LISTING_CONSTRAINTS.bulletCount), bulletPointsZh: z.array(chineseText).length(LISTING_CONSTRAINTS.bulletCount), description: englishText, descriptionZh: chineseText, keywords: z.array(englishText).min(1) });
+export const listingSaveSchema = z.object({title:z.string().trim().min(1).max(LISTING_CONSTRAINTS.titleMaxLength),titleZh:z.string().trim().max(LISTING_CONSTRAINTS.titleMaxLength).nullable().optional(),bullets:z.array(z.string().trim().min(1)).max(7).default([]),bulletsZh:z.array(z.string().trim().min(1)).max(7).default([]),description:z.string().nullable().optional(),descriptionZh:z.string().nullable().optional(),keywords:z.array(z.string().trim().min(1)).default([]),sourceListingId:z.string().min(1).optional()}).refine(value=>value.bulletsZh.length===0||value.bulletsZh.length===value.bullets.length,{message:"Chinese bullets must align with English bullets",path:["bulletsZh"]});
 export type ResearchAnalysis = z.infer<typeof researchAnalysisSchema>;
 export type ListingGeneration = z.infer<typeof listingGenerationSchema>;

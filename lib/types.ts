@@ -47,6 +47,9 @@ export type TaskRecord = {
 };
 
 export type AiUsageRecord = { provider:string; model?:string; latencyMs:number; inputTokens?:number; outputTokens?:number; totalTokens?:number };
+export type CompetitorSnapshot = import("@/marketplace/types").CompetitorProduct & { enrichmentStatus: "succeeded" | "failed" | "not_requested" | "unknown" };
+export type ListingResearchContext = { researchId:string; createdAt:string; marketplace:string; competitorCount:number; priceRange:string; userPainPoints:string[]; recommendedKeywords:string[] };
+export type ProductSummary = { productId:string; research:Pick<ResearchResultRecord,"id"|"competitorCount"|"createdAt">|null; listingCount:number; latestListing:Pick<ListingRecord,"id"|"version"|"createdAt">|null; tasks:TaskRecord[] };
 export type ListingRecord = {
   id: string;
   productId: string;
@@ -54,6 +57,10 @@ export type ListingRecord = {
   version: number;
   title: string;
   bullets: string[];
+  titleZh?: string | null;
+  bulletsZh?: string[];
+  descriptionZh?: string | null;
+  researchContext?: ListingResearchContext | null;
   description: string | null;
   keywords: string[];
   status: string;
@@ -62,7 +69,7 @@ export type ListingRecord = {
   aiUsage?: AiUsageRecord | null;
 };
 
-export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; coreSellingPoints: string[]; userPainPoints: string[]; targetUsers: string[]; competitorDifferentiators: string[]; recommendedKeywords: string[]; risks: string[]; source: string; marketplace: string; query: string; competitorIds: string[]; fetchedAt: string; stats: Record<string, unknown>; aiUsage?: AiUsageRecord | null; createdAt: string };
+export type ResearchResultRecord = { id: string; productId: string; taskId: string | null; competitorCount: number; coverage: string; priceRange: string; opportunities: string[]; coreSellingPoints: string[]; userPainPoints: string[]; targetUsers: string[]; competitorDifferentiators: string[]; recommendedKeywords: string[]; risks: string[]; source: string; marketplace: string; query: string; competitorIds: string[]; competitorSnapshot?: CompetitorSnapshot[]; fetchedAt: string; stats: Record<string, unknown>; aiUsage?: AiUsageRecord | null; createdAt: string };
 export type AssetRecord = { id: string; productId: string; taskId: string | null; kind: string; name: string; url: string | null; metadata: Record<string, unknown>; status: string; createdAt: string };
 export type SeoAuditRecord = { id: string; productId: string; taskId: string | null; score: number; issueCount: number; details: Record<string, unknown>; status: string; createdAt: string };
 

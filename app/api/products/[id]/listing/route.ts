@@ -1,3 +1,4 @@
+import { listingSaveSchema } from "@/ai/schemas";
 import { NextResponse } from "next/server";
 import { authenticated } from "@/lib/api-auth";
 import { getRepositories } from "@/repositories";
@@ -25,8 +26,9 @@ export async function POST(request: Request, context: Context) {
       await taskQueue.enqueue(task.id);
       return NextResponse.json({ taskId: task.id, status: task.status, task }, { status: 202 });
     }
-    if (typeof body.title !== "string" || !body.title.trim()) return NextResponse.json({ error: "Listing 标题不能为空" }, { status: 400 });
-    const listing = await saveListing(id, { title: body.title, bullets: Array.isArray(body.bullets) ? body.bullets.map(String) : [], description: typeof body.description === "string" ? body.description : null, keywords: Array.isArray(body.keywords) ? body.keywords.map(String) : [] }, repositories);
+    const parsed = listingSaveSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({error:"Listing 内容格式不正确",issues:parsed.error.issues},{status:400});
+    const listing = await saveListing(id, parsed.data, repositories);
     return NextResponse.json({ listing }, { status: 201 });
   });
 }

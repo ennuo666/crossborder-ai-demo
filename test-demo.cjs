@@ -25,7 +25,7 @@ for (const file of [
 }
 
 const app = read("components/workspace/workspace-app.tsx");
-const views = read("components/workspace/views.tsx");
+const views = ["views", "research-view", "listing-view", "overview-view", "products-view"].map(name => read(`components/workspace/${name}.tsx`)).join("\n");
 const navigation = read("lib/navigation.ts");
 for (const view of ["overview", "products", "research", "listing", "assets", "store", "seo", "tasks", "settings"]) {
   assert.match(app, new RegExp(`${view}:`));
@@ -36,7 +36,7 @@ for (const label of ["总览", "商品中心", "竞品研究", "Listing 文案",
 assert.match(app, /createProduct/);
 assert.match(app, /sendMessage/);
 assert.match(views, /生成新版本/);
-assert.match(views, /运行审计/);
+assert.match(views, /尚未开放/);
 assert.match(read("prisma/schema.prisma"), /model Product/);
 assert.match(read("prisma/schema.prisma"), /model Task/);
 assert.match(read("prisma/schema.prisma"), /model ResearchResult/);

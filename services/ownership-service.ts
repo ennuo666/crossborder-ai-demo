@@ -21,12 +21,12 @@ export function forUser(userId: string, repositories: RepositoryBundle) {
     },
     async detail(id: string) {
       const owned = await product(id);
-      const [listing, research, assets, seoAudit, tasks] = await Promise.all([
+      const [listing, research, assets, seoAudit, tasks, listings] = await Promise.all([
         repositories.listings.latestByProduct(id), repositories.research.latestByProduct(id),
         repositories.assets.listByProduct(id), repositories.seoAudits.latestByProduct(id),
-        repositories.tasks.listByProduct(id),
+        repositories.tasks.listByProduct(id), repositories.listings.listByProduct(id),
       ]);
-      return { product: owned, listing, research, assets, seoAudit, tasks };
+      return { product: owned, listing, research, assets, seoAudit, tasks, listings };
     },
   };
 }

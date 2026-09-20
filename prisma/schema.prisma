@@ -142,6 +142,7 @@ model ResearchResult {
   marketplace     String   @default("mock")
   query           String   @default("")
   competitorIds   Json
+  competitorSnapshot Json @default("[]")
   fetchedAt       DateTime
   stats           Json
   aiUsage         Json?
@@ -158,6 +159,10 @@ model Listing {
   taskId      String?  @unique
   version     Int
   title       String
+  titleZh     String?
+  bulletsZh   Json @default("[]")
+  descriptionZh String?
+  researchContext Json?
   bullets     Json
   description String?
   keywords    Json
