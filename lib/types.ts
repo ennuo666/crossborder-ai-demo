@@ -26,6 +26,7 @@ export type ProductRecord = {
   progress: number;
   createdAt: string;
   updatedAt: string;
+  userId: string | null;
 };
 
 export type TaskRecord = {

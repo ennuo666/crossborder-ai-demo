@@ -11,11 +11,14 @@ const toTask = (row: { id: string; productId: string; type: PrismaTaskType; stat
 export function createPrismaRepositories(client: Client = defaultPrisma): RepositoryBundle {
   return {
     products: {
+      async listForUser(userId) { const rows = await client.product.findMany({ where: { userId }, orderBy: { updatedAt: "desc" } }); return rows.map(row => toProduct(row)!); },
+      async findForUser(id, userId) { return toProduct(await client.product.findFirst({ where: { id, userId } })); },
       async list() { const rows = await client.product.findMany({ orderBy: { updatedAt: "desc" } }); return rows.map(row => ({ ...row, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() })); },
       async findById(id: string) { return toProduct(await client.product.findUnique({ where: { id } })); },
-      async create(input: ProductCreateInput) { const row = await client.product.create({ data: { name: input.name, subtitle: input.subtitle ?? null, market: input.market, channel: input.channel } }); return { ...row, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() }; },
+      async create(input: ProductCreateInput) { const row = await client.product.create({ data: { name: input.name, subtitle: input.subtitle ?? null, market: input.market, channel: input.channel, userId: input.userId ?? null } }); return { ...row, createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt.toISOString() }; },
     },
     tasks: {
+      async findForUser(id, userId) { const row = await client.task.findFirst({ where: { id, product: { userId } } }); return row ? toTask(row) : null; },
       async create(input: TaskCreateInput) { const row = await client.task.create({ data: { productId: input.productId, type: input.type as PrismaTaskType, input: input.input === undefined ? undefined : json(input.input) } }); return toTask(row); },
       async findById(id: string) { const row = await client.task.findUnique({ where: { id } }); return row ? toTask(row) : null; },
       async update(id: string, input: TaskUpdateInput) { const row = await client.task.update({ where: { id }, data: { status: input.status as PrismaTaskStatus | undefined, progress: input.progress, output: input.output === undefined ? undefined : json(input.output), errorCode: input.errorCode, errorMessage: input.errorMessage, retryCount: input.retryCount, startedAt: input.startedAt ? new Date(input.startedAt) : undefined, finishedAt: input.finishedAt ? new Date(input.finishedAt) : undefined } }); return toTask(row); },

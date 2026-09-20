@@ -6,7 +6,7 @@ const now = () => new Date().toISOString();
 const id = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export function createInMemoryRepositories(seed = false): RepositoryBundle {
-  const productRows: ProductRecord[] = seed ? mockProducts.map(product => ({ id: product.id, name: product.name, subtitle: product.subtitle, market: product.market, channel: product.channel, status: product.status, progress: product.progress, createdAt: now(), updatedAt: now() })) : [];
+  const productRows: ProductRecord[] = seed ? mockProducts.map(product => ({ id: product.id, name: product.name, subtitle: product.subtitle, market: product.market, channel: product.channel, status: product.status, progress: product.progress, userId: null, createdAt: now(), updatedAt: now() })) : [];
   const taskRows: TaskRecord[] = [];
   const listingRows: ListingRecord[] = [];
   const researchRows: ResearchResultRecord[] = [];
@@ -14,11 +14,14 @@ export function createInMemoryRepositories(seed = false): RepositoryBundle {
   const seoRows: SeoAuditRecord[] = [];
 
   const productsRepo = {
+    async listForUser(userId: string) { return productRows.filter(row => row.userId === userId); },
+    async findForUser(productId: string, userId: string) { return productRows.find(row => row.id === productId && row.userId === userId) ?? null; },
     async list() { return [...productRows].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)); },
     async findById(productId: string) { return productRows.find(row => row.id === productId) ?? null; },
-    async create(input: ProductCreateInput) { const timestamp = now(); const row: ProductRecord = { id: id("product"), name: input.name, subtitle: input.subtitle ?? null, market: input.market, channel: input.channel, status: "待研究", progress: 0, createdAt: timestamp, updatedAt: timestamp }; productRows.push(row); return row; },
+    async create(input: ProductCreateInput) { const timestamp = now(); const row: ProductRecord = { id: id("product"), name: input.name, subtitle: input.subtitle ?? null, market: input.market, channel: input.channel, status: "待研究", progress: 0, userId: input.userId ?? null, createdAt: timestamp, updatedAt: timestamp }; productRows.push(row); return row; },
   };
   const tasksRepo: TaskRepository = {
+    async findForUser(taskId, userId) { return taskRows.find(row => row.id === taskId && productRows.some(product => product.id === row.productId && product.userId === userId)) ?? null; },
     async create(input: TaskCreateInput) { const timestamp = now(); const row: TaskRecord = { id: id("task"), productId: input.productId, type: input.type, status: "queued", progress: 0, input: input.input ?? null, output: null, errorCode: null, errorMessage: null, retryCount: 0, startedAt: null, finishedAt: null, createdAt: timestamp, updatedAt: timestamp }; taskRows.push(row); return row; },
     async findById(taskId: string) { return taskRows.find(row => row.id === taskId) ?? null; },
     async update(taskId: string, input: TaskUpdateInput) { const row = taskRows.find(item => item.id === taskId); if (!row) throw new Error("TASK_NOT_FOUND"); Object.assign(row, input, { updatedAt: now() }); return row; },

@@ -32,6 +32,8 @@ model Product {
   progress        Int              @default(0)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  userId          String?
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks           Task[]
   researchResults ResearchResult[]
   listings        Listing[]
@@ -39,6 +41,62 @@ model Product {
   seoAudits       SeoAudit[]
 
   @@index([updatedAt])
+  @@index([userId, updatedAt])
+}
+
+model User {
+  id           String    @id
+  email        String    @unique
+  name         String
+  emailVerified Boolean @default(false)
+  image String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+  sessions Session[]
+  accounts Account[]
+}
+
+model Session {
+  id String @id
+  token String @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Account {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope String?
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@unique([providerId, accountId])
+}
+
+model Verification {
+  id String @id
+  identifier String
+  value String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([identifier])
 }
 
 model Task {

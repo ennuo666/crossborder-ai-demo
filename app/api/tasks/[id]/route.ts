@@ -1,3 +1,7 @@
 import { NextResponse } from "next/server";
+import { authenticated } from "@/lib/api-auth";
 import { getRepositories } from "@/repositories";
-export async function GET(_request:Request,context:{params:Promise<{id:string}>}){const {id}=await context.params; const task=await getRepositories().tasks.findById(id); return task?NextResponse.json({task}):NextResponse.json({error:"任务不存在"},{status:404});}
+import { forUser } from "@/services/ownership-service";
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  return authenticated(request, async userId => NextResponse.json({ task: await forUser(userId, getRepositories()).task((await context.params).id) }));
+}

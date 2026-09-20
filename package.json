@@ -10,12 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "node test-demo.cjs && tsx --test tests/*.test.ts",
     "test:unit": "tsx --test tests/*.test.ts",
-    "prisma:generate": "prisma generate",
-    "prisma:validate": "prisma validate"
+    "test:stage8": "node scripts/stage8-production-smoke.cjs",
+    "prisma:generate": "node scripts/prisma.cjs generate",
+    "prisma:validate": "node scripts/prisma.cjs validate"
   },
   "dependencies": {
     "@prisma/client": "6.16.2",
     "@radix-ui/react-dialog": "^1.1.6",
+    "better-auth": "^1.7.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
