@@ -2,7 +2,7 @@ import type { AssetRecord, ListingRecord, ProductRecord, ResearchResultRecord, S
 
 export type ProductCreateInput = { name: string; market: string; channel: string; subtitle?: string | null };
 export type TaskCreateInput = { productId: string; type: TaskType; input?: unknown };
-export type TaskUpdateInput = Partial<Pick<TaskRecord, "status" | "progress" | "output" | "errorCode" | "errorMessage" | "retryCount">>;
+export type TaskUpdateInput = Partial<Pick<TaskRecord, "status" | "progress" | "output" | "errorCode" | "errorMessage" | "retryCount" | "startedAt" | "finishedAt">>;
 export type ListingCreateInput = { productId: string; taskId?: string | null; title: string; bullets: string[]; description?: string | null; keywords: string[]; status?: string; aiUsage?: import("@/lib/types").AiUsageRecord | null };
 export type ResearchCreateInput = Omit<ResearchResultRecord, "id" | "createdAt">;
 export type AssetCreateInput = Omit<AssetRecord, "id" | "createdAt">;

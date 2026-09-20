@@ -69,7 +69,7 @@ export function WorkspaceApp() {
   async function runTask(type: TaskType) {
     if (!activeProduct?.id || activeProduct.id === "fallback") { toast("请先创建一个可持久化的商品项目"); return; }
     const response = await fetch(`/api/products/${activeProduct.id}/tasks`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type }) });
-    if (response.ok) { const data = await response.json() as { task?: TaskRecord }; toast(data.task?.status === "failed" ? "任务失败，错误已记录" : `${type} 任务已完成并保存`); await loadWorkspace(); } else toast("任务执行失败，请稍后重试");
+    if (response.ok) { const data = await response.json() as { taskId: string; status: string; task?: TaskRecord }; toast("任务已排队，后台处理中"); let terminal: TaskRecord | undefined; for (let attempt = 0; attempt < 90; attempt++) { await new Promise(resolve => window.setTimeout(resolve, 1500)); const statusResponse = await fetch(`/api/tasks/${data.taskId}`, { cache: "no-store" }); if (!statusResponse.ok) break; const statusData = await statusResponse.json() as { task: TaskRecord }; terminal = statusData.task; if (["succeeded", "failed", "cancelled"].includes(terminal.status)) break; } await loadWorkspace(); toast(terminal?.status === "succeeded" ? `${type} 任务已完成并保存` : terminal?.status === "failed" ? `任务失败：${terminal.errorMessage ?? "错误已记录"}` : "任务仍在后台处理中"); } else toast("任务执行失败，请稍后重试");
   }
 
   const sharedProps = { navigate, toast, selectProduct, product: activeProduct, products: productRows, tasks: taskRows, listing, research, productId: activeProduct?.id, runTask, refresh: loadWorkspace };
@@ -83,3 +83,4 @@ export function WorkspaceApp() {
     <button className="floating-create" onClick={() => setProductDialogOpen(true)}>＋ 创建商品</button><div className={`toast ${toastMessage ? "show" : ""}`} role="status">{toastMessage}</div>
   </div>;
 }
+

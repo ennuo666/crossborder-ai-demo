@@ -19,7 +19,7 @@ export function createInMemoryRepositories(seed = false): RepositoryBundle {
     async create(input: ProductCreateInput) { const timestamp = now(); const row: ProductRecord = { id: id("product"), name: input.name, subtitle: input.subtitle ?? null, market: input.market, channel: input.channel, status: "待研究", progress: 0, createdAt: timestamp, updatedAt: timestamp }; productRows.push(row); return row; },
   };
   const tasksRepo: TaskRepository = {
-    async create(input: TaskCreateInput) { const timestamp = now(); const row: TaskRecord = { id: id("task"), productId: input.productId, type: input.type, status: "queued", progress: 0, input: input.input ?? null, output: null, errorCode: null, errorMessage: null, retryCount: 0, createdAt: timestamp, updatedAt: timestamp }; taskRows.push(row); return row; },
+    async create(input: TaskCreateInput) { const timestamp = now(); const row: TaskRecord = { id: id("task"), productId: input.productId, type: input.type, status: "queued", progress: 0, input: input.input ?? null, output: null, errorCode: null, errorMessage: null, retryCount: 0, startedAt: null, finishedAt: null, createdAt: timestamp, updatedAt: timestamp }; taskRows.push(row); return row; },
     async findById(taskId: string) { return taskRows.find(row => row.id === taskId) ?? null; },
     async update(taskId: string, input: TaskUpdateInput) { const row = taskRows.find(item => item.id === taskId); if (!row) throw new Error("TASK_NOT_FOUND"); Object.assign(row, input, { updatedAt: now() }); return row; },
     async listByProduct(productId: string) { return taskRows.filter(row => row.productId === productId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)); },
@@ -30,4 +30,5 @@ export function createInMemoryRepositories(seed = false): RepositoryBundle {
   const seoRepo = { async create(input: SeoAuditCreateInput) { const row: SeoAuditRecord = { ...input, id: id("seo"), createdAt: now() }; seoRows.push(row); return row; }, async latestByProduct(productId: string) { return [...seoRows].filter(row => row.productId === productId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null; } };
   return { products: productsRepo, tasks: tasksRepo, listings: listingsRepo, research: researchRepo, assets: assetsRepo, seoAudits: seoRepo };
 }
+
 

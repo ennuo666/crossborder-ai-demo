@@ -52,6 +52,8 @@ model Task {
   errorCode   String?
   errorMessage String?
   retryCount  Int        @default(0)
+  startedAt   DateTime?
+  finishedAt  DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)

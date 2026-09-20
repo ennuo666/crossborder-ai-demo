@@ -39,6 +39,8 @@ export type TaskRecord = {
   errorCode: string | null;
   errorMessage: string | null;
   retryCount: number;
+  startedAt: string | null;
+  finishedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
