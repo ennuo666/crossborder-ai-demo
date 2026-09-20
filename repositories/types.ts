@@ -9,7 +9,7 @@ export type AssetCreateInput = Omit<AssetRecord, "id" | "createdAt">;
 export type SeoAuditCreateInput = Omit<SeoAuditRecord, "id" | "createdAt">;
 
 export interface ProductRepository { list(): Promise<ProductRecord[]>; findById(id: string): Promise<ProductRecord | null>; create(input: ProductCreateInput): Promise<ProductRecord>; }
-export interface TaskRepository { create(input: TaskCreateInput): Promise<TaskRecord>; findById(id: string): Promise<TaskRecord | null>; update(id: string, input: TaskUpdateInput): Promise<TaskRecord>; listByProduct(productId: string): Promise<TaskRecord[]>; }
+export interface TaskRepository { create(input: TaskCreateInput): Promise<TaskRecord>; findById(id: string): Promise<TaskRecord | null>; update(id: string, input: TaskUpdateInput): Promise<TaskRecord>; listByProduct(productId: string): Promise<TaskRecord[]>; listByStatus(status: TaskStatus): Promise<TaskRecord[]>; }
 export interface ListingRepository { create(input: ListingCreateInput): Promise<ListingRecord>; latestByProduct(productId: string): Promise<ListingRecord | null>; listByProduct(productId: string): Promise<ListingRecord[]>; }
 export interface ResearchRepository { create(input: ResearchCreateInput): Promise<ResearchResultRecord>; latestByProduct(productId: string): Promise<ResearchResultRecord | null>; }
 export interface AssetRepository { create(input: AssetCreateInput): Promise<AssetRecord>; listByProduct(productId: string): Promise<AssetRecord[]>; }

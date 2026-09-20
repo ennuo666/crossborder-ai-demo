@@ -1,0 +1,7 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createInMemoryRepositories } from "@/repositories/in-memory-repository";
+import { createTask } from "@/services/task-service";
+import { recoverPersistedTasks } from "@/task-recovery/service";
+test("recovery re-enqueues queued tasks once and does not touch terminal tasks",async()=>{const repos=createInMemoryRepositories(); const product=await repos.products.create({name:"x",market:"US",channel:"Amazon"}); const queued=await createTask(product.id,"RESEARCH",undefined,repos); const succeeded=await createTask(product.id,"RESEARCH",undefined,repos); await repos.tasks.update(succeeded.id,{status:"succeeded"}); const ids:string[]=[]; const queue={enqueue:async(id:string)=>{ids.push(id)}}; const summary=await recoverPersistedTasks(repos,queue); assert.deepEqual(ids,[queued.id]); assert.equal(summary.queuedRecovered,1);});
+test("recovery marks stale running tasks interrupted",async()=>{const repos=createInMemoryRepositories(); const product=await repos.products.create({name:"x",market:"US",channel:"Amazon"}); const task=await createTask(product.id,"RESEARCH",undefined,repos); const old=new Date(Date.now()-300000).toISOString(); await repos.tasks.update(task.id,{status:"running",startedAt:old}); const summary=await recoverPersistedTasks(repos,{enqueue:async()=>{}}); const loaded=await repos.tasks.findById(task.id); assert.equal(summary.interrupted,1); assert.equal(loaded?.status,"failed"); assert.equal(loaded?.errorCode,"TASK_INTERRUPTED");});
